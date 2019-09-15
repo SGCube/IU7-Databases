@@ -26,6 +26,12 @@
 *.a
 *.lib
 
+# Visual Studio / Visual Code
+**/.vscode/**
+**/.vs/**
+*.sln
+**/Debug/**
+
 # Executables
 *.exe
 *.out
