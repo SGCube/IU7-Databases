@@ -230,14 +230,23 @@ class Station:
         max_amount = 3 * avg // 2
 
         gen_list = []
-        for k in range(len(lines_list)):
+        for k in range(len(lines_list) - 1):
             lines_lengths.append(
-                random.randint(1, min(max_amount, stations_qty)))
+                random.randint(5, min(max_amount, stations_qty)))
             lines_codes.append(lines_list[k].get_code())
             stations_qty -= lines_lengths[k]
 
             for i in range(lines_lengths[k]):
                 gen_list.append(Station(fake.street_title(), lines_codes[k]))
+
+        k = len(lines_list) - 1
+
+        lines_lengths.append(stations_qty)
+        lines_codes.append(lines_list[k].get_code())
+        stations_qty -= lines_lengths[k]
+
+        for i in range(lines_lengths[k]):
+            gen_list.append(Station(fake.street_title(), lines_codes[k]))
 
         return gen_list, lines_lengths
 
@@ -283,7 +292,7 @@ class Depot:
             depot_qty.append(lines_lengths[k] // 15 + 1)
             for i in range(depot_qty[k]):
                 nearest_station = random.randint(1 + 15 * i, 15 * (i + 1))
-                gen_list.append(Station(fake.street_title(), nearest_station))
+                gen_list.append(Depot(fake.street_title(), nearest_station))
         return gen_list
 
 
