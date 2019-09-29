@@ -1,3 +1,7 @@
+# PyCharm
+**/.idea/**
+**/__pycache__/**
+
 # Prerequisites
 *.d
 
@@ -25,6 +29,12 @@
 *.la
 *.a
 *.lib
+
+# Visual Studio / Visual Code
+**/.vscode/**
+**/.vs/**
+*.sln
+**/Debug/**
 
 # Executables
 *.exe
