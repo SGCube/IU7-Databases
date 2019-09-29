@@ -118,6 +118,14 @@ def job_gen(sex="М"):
 
 class Line:
     count = 0
+    color_list = ["красный", "зелёный", "синий", "голубой", "коричневый",
+                  "оранжевый", "фиолетовый", "жёлтый", "серый", "салатовый",
+                  "бирюзовый", "чёрный", "розовый", "белый", "сиреневый",
+                  "розовый", "персиковый", "бордовый", "золотой", "фуксия"]
+
+    param_names = "[Code],[Name],[Color]"
+    format_str = "'%s','%s','%s'"
+    null_str = "'%s',null,'%s'"
 
     __code = "0"
     __name = ""
@@ -133,13 +141,14 @@ class Line:
         self.__name = name
 
         self.__color = color
-        if self.__color is None:
-            self.__color = fake.safe_color_name()
+        if self.__color is None and len(Line.color_list) > 0:
+            self.__color = random.choice(Line.color_list)
+            Line.color_list.remove(self.__color)
 
     def __str__(self):
         if self.__name == "":
-            return "'%s',,'%s'" % (self.__code, self.__color)
-        return "'%s','%s','%s'" % (self.__code, self.__name, self.__color)
+            return Line.null_str % (self.__code, self.__color)
+        return Line.format_str % (self.__code, self.__name, self.__color)
 
     def get_code(self):
         return self.__code
@@ -154,6 +163,10 @@ class Line:
 
 class Station:
     count = 0
+    param_names = "[ID],[Name],[Line_ID],[Station_State],[Open_Time],"\
+                  "[Close_Time],[Streets],[Open_Date],"\
+                  "[Platforms_Qty],[Depth]"
+    format_str = "%d,'%s','%s','%s','%s','%s','%s','%s',%d,%.2f"
 
     __id = 0
     __name = ""
@@ -163,19 +176,18 @@ class Station:
     __end_time = "23:59:59"
     __streets = ""
     __open_date = "1930-01-01"
-    __st_type = ""
     __plat_qty = 1
     __depth = 0.0
 
-    def __init__(self, name="", line_code="", state="", start=None, end=None,
-                 streets="", open_date=None, st_type="", plat_qty=0,
-                 depth=None):
+    def __init__(self, name="", line_code="", state="Работает",
+                 start=None, end=None, streets="", open_date=None,
+                 plat_qty=0, depth=None):
         Station.count += 1
         self.__id = Station.count
 
         self.__name = name
         if self.__name == "":
-            while self.__name[-2::1] != "ая":
+            while self.__name[-2:] != "ая":
                 self.__name = fake.street_title()
 
         self.__line_code = line_code
@@ -195,14 +207,12 @@ class Station:
         if self.__streets == "":
             size = random.randint(1, 5)
             for i in range(size):
-                self.__streets += fake.street_name() + ","
-            self.__streets = self.__streets[:-1]
+                self.__streets += fake.street_name() + ", "
+            self.__streets = self.__streets[:-2]
 
         self.__open_date = open_date
         if self.__open_date is None:
             self.__open_date = date_gen()
-
-        self.__st_type = st_type
 
         self.__plat_qty = plat_qty
         if self.__plat_qty == 0:
@@ -213,10 +223,10 @@ class Station:
             self.__depth = random.random() * 100
 
     def __str__(self):
-        return "%d,'%s','%s','%s','%s','%s','%s','%s','%s',%d,%.1f" % (
+        return Station.format_str % (
             self.__id, self.__name, self.__line_code, self.__state,
             self.__start_time, self.__end_time, self.__streets,
-            self.__open_date, self.__st_type, self.__plat_qty, self.__depth)
+            self.__open_date, self.__plat_qty, self.__depth)
 
     @staticmethod
     def list_generate(size, lines_list):
@@ -237,7 +247,7 @@ class Station:
             stations_qty -= lines_lengths[k]
 
             for i in range(lines_lengths[k]):
-                gen_list.append(Station(fake.street_title(), lines_codes[k]))
+                gen_list.append(Station("", lines_codes[k]))
 
         k = len(lines_list) - 1
 
@@ -248,11 +258,19 @@ class Station:
         for i in range(lines_lengths[k]):
             gen_list.append(Station(fake.street_title(), lines_codes[k]))
 
-        return gen_list, lines_lengths
+        lines_ranges = []
+        k = 0
+        for i in range(len(lines_list)):
+            lines_ranges.append((k + 1, k + lines_lengths[i]))
+            k += lines_lengths[i]
+
+        return gen_list, lines_lengths, lines_ranges
 
 
 class Depot:
     count = 0
+    param_names = "[ID],[Name],[Nearest_Station_ID],[Open_Date]"
+    format_str = "%d,'%s',%d,'%s'"
 
     __id = 0
     __name = ""
@@ -280,15 +298,17 @@ class Depot:
             self.__address = fake.street_address()
 
     def __str__(self):
-        return "%d,'%s',%d,'%s','%s'" % (self.__id, self.__name,
-                                         self.__nearest_station,
-                                         self.__open_date, self.__address)
+        return Depot.format_str % (self.__id, self.__name,
+                                   self.__nearest_station, self.__open_date)
+
+    def get_id(self):
+        return self.__id
 
     @staticmethod
-    def list_generate(lines_lengths, lines_list):
+    def list_generate(lines_lengths):
         gen_list = []
         depot_qty = []
-        for k in range(len(lines_list)):
+        for k in range(len(lines_lengths)):
             depot_qty.append(lines_lengths[k] // 15 + 1)
             for i in range(depot_qty[k]):
                 nearest_station = random.randint(1 + 15 * i, 15 * (i + 1))
@@ -298,6 +318,10 @@ class Depot:
 
 class Train:
     count = 0
+    param_names = "[Model],[Wagons_Qty],[Seats_Qty],[Produce_Start_y],"\
+                  "[Produce_End_y],[Exploit_Since_y]"
+    format_str = "'%s',%d,%d,%d,%d,%d"
+    null_str = "'%s',%d,%d,%d,null,%d"
 
     __model = ""
     __wagons_qty = 0
@@ -340,15 +364,18 @@ class Train:
 
     def __str__(self):
         if self.__construction_end is None:
-            return "'%s',%d,%d,%d,,%d" % (self.__model, self.__wagons_qty,
-                                          self.__seats_qty,
-                                          self.__construction_start,
-                                          self.__exploit_since)
-        return "'%s',%d,%d,%d,%d,%d" % (self.__model, self.__wagons_qty,
-                                        self.__seats_qty,
-                                        self.__construction_start,
-                                        self.__construction_end,
-                                        self.__exploit_since)
+            return Train.null_str % (self.__model, self.__wagons_qty,
+                                     self.__seats_qty,
+                                     self.__construction_start,
+                                     self.__exploit_since)
+        return Train.format_str % (self.__model, self.__wagons_qty,
+                                   self.__seats_qty,
+                                   self.__construction_start,
+                                   self.__construction_end,
+                                   self.__exploit_since)
+
+    def get_model(self):
+        return self.__model
 
     @staticmethod
     def list_generate(size):
@@ -360,6 +387,9 @@ class Train:
 
 class Worker:
     count = 0
+    param_names = "[ID],[Name],[Sex],[Birth_Date],[Phone_Number],[Address],"\
+                  "[Job]"
+    format_str = "%d,'%s','%s','%s','%s','%s','%s'"
 
     __id = 0
     __name = ""
@@ -368,10 +398,9 @@ class Worker:
     __phone_number = ""
     __address = ""
     __job = ""
-    __exp = 0
 
     def __init__(self, name="", sex="", birth_date=None, phone_number=None,
-                 address=None, job=None, exp=None):
+                 address=None, job=None):
         Worker.count += 1
         self.__id = Worker.count
         self.__sex = sex
@@ -407,20 +436,13 @@ class Worker:
 
         age = (datetime.date.today() - self.__birth_date).days // 365
 
-        self.__exp = exp
-        if self.__exp is None:
-            if age - 24 == 0:
-                self.__exp = 0
-            else:
-                self.__exp = random.randint(0, age - 24)
-
     def __str__(self):
-        return "%d,'%s','%s','%s','%s','%s','%s',%d" % (self.__id, self.__name,
-                                                        self.__sex,
-                                                        self.__birth_date,
-                                                        self.__phone_number,
-                                                        self.__address,
-                                                        self.__job, self.__exp)
+        return Worker.format_str % (self.__id, self.__name, self.__sex,
+                                    self.__birth_date, self.__phone_number,
+                                    self.__address, self.__job)
+
+    def get_job(self):
+        return self.__job
 
     @staticmethod
     def list_generate(size):
@@ -431,14 +453,143 @@ class Worker:
 
 
 ##############################################################################
-# CSV Create methods #
+
+class Transfer:
+    param_names = "[ID_Station_1],[ID_Station_2],[Time],[Length]"
+    format_str = "%d,%d,%d,%d"
+
+    __station_1 = 0
+    __station_2 = 0
+    __time = 0
+    __length = 0
+
+    def __init__(self, st1, st2, time, length):
+        self.__station_1 = st1
+        self.__station_2 = st2
+        self.__time = time
+        self.__length = length
+
+    def __str__(self):
+        return Transfer.format_str % (self.__station_1, self.__station_2,
+                                      self.__time, self.__length)
+
+    @staticmethod
+    def list_generate(lines_ranges):
+        gen_list = []
+        lines_qty = len(lines_ranges)
+        for i in range(lines_qty - 1):
+            transfers_qty = random.randint(1, 5)
+            station_1 = lines_ranges[i][0]
+            line_2 = i + 1
+            for j in range(transfers_qty):
+                station_1 = random.randint(station_1, lines_ranges[i][1])
+                line_2 = random.randint(line_2, lines_qty - 1)
+                station_2 = random.randint(lines_ranges[line_2][0],
+                                           lines_ranges[line_2][1])
+                gen_list.append(Transfer(station_1, station_2,
+                                         random.randint(1, 8),
+                                         random.randint(500, 7000)))
+        return gen_list
+
+
+class Stock:
+    param_names = "[Depot_ID],[Model_Code],[Qty]"
+    format_str = "%d,'%s',%d"
+
+    __depot = 0
+    __model = ""
+    __qty = 0
+
+    def __init__(self, depot, model, qty):
+        self.__depot = depot
+        self.__model = model
+        self.__qty = qty
+
+    def __str__(self):
+        return Stock.format_str % (self.__depot, self.__model, self.__qty)
+
+    @staticmethod
+    def list_generate(trains, depots):
+        gen_list = []
+        for i in range(len(depots)):
+            for j in range(len(trains)):
+                if random.randint(0, 1):
+                    gen_list.append(Stock(depots[i].get_id(),
+                                          trains[j].get_model(),
+                                          random.randint(5, 25)))
+        return gen_list
+
+
+class WorkplaceStation:
+    param_names = "[Worker_ID],[Station_ID],[Line_Code],[Start_Time],[End_Time]"
+    format_str = "%d,%d,'%s','%s','%s'"
+    null1_str = "%d,null,'%s','%s','%s'"
+    null2_str = "%d,%d,null,'%s','%s'"
+    null3_str = "%d,null,null,'%s','%s'"
+
+    __worker = 0
+    __station = None
+    __line = None
+    __start_time = ""
+    __end_time = ""
+
+    def __init__(self, worker, station, line, start_time, end_time):
+        self.__worker = worker
+        self.__station = station
+        self.__line = line
+
+        self.__start_time = start_time
+        self.__end_time = end_time
+
+    def __str__(self):
+        if self.__station is None and self.__line is None:
+            return WorkplaceStation.null3_str % (self.__worker,
+                                                 self.__start_time,
+                                                 self.__end_time)
+        if self.__station is None:
+            return WorkplaceStation.null1_str % (self.__worker,
+                                                 self.__line, self.__start_time,
+                                                 self.__end_time)
+        if self.__line is None:
+            return WorkplaceStation.null2_str % (self.__worker, self.__station,
+                                                 self.__start_time,
+                                                 self.__end_time)
+        return WorkplaceStation.format_str % (self.__worker, self.__station,
+                                              self.__line, self.__start_time,
+                                              self.__end_time)
+
+    @staticmethod
+    def list_generate(workers, stations, lines):
+        gen_list = []
+        for i in range(len(workers)):
+            if workers[i].get_job() in ["машинист электропоезда",
+                                        "помощник машиниста"]:
+                start_time = Time.generate(Time(5, 0), Time(14, 0))
+                gen_list.append(
+                    WorkplaceStation(i + 1, None,
+                                     random.choice(lines).get_code(),
+                                     start_time,
+                                     Time.generate(start_time, Time(23, 59))))
+            else:
+                start_time = Time.generate(Time(5, 0), Time(14, 0))
+                gen_list.append(
+                    WorkplaceStation(i + 1, random.randint(1, len(stations)),
+                                     None, start_time,
+                                     Time.generate(start_time, Time(23, 59))))
+        return gen_list
+
+
+##############################################################################
+# SQL Create methods #
 ##############################################################################
 
-def csv_list_write(file_name, data_list):
-    file = open(file_name, "w")
-    for data in data_list:
-        file.write(str(data) + "\n")
-    file.close()
+def sql_write(file, table_name, obj_class, data_list):
+    file.write("INSERT INTO %s(%s)\n\tVALUES\t" % (table_name,
+                                                   obj_class.param_names))
+    for i in range(len(data_list) - 1):
+        file.write("(%s),\n\t\t" % str(data_list[i]))
+    file.write("(%s)\n\t\t" % str(data_list[len(data_list) - 1]))
+    file.write("\nGO\n\n")
 
 
 ##############################################################################
@@ -447,16 +598,29 @@ def csv_list_write(file_name, data_list):
 
 def generate_all():
     lines_list = Line.list_generate(20)
-    stations_list, lines_lengths = Station.list_generate(400, lines_list)
-    depots_list = Depot.list_generate(lines_lengths, lines_list)
+    stations_list, lines_lengths, lines_ranges =\
+        Station.list_generate(400, lines_list)
+    depots_list = Depot.list_generate(lines_lengths)
     trains_list = Train.list_generate(30)
     workers_list = Worker.list_generate(1000)
+    transfers_list = Transfer.list_generate(lines_ranges)
+    stocks_list = Stock.list_generate(trains_list, depots_list)
+    wpstation_list = WorkplaceStation.list_generate(workers_list, stations_list,
+                                                    lines_list)
 
-    csv_list_write("data_lines.csv", lines_list)
-    csv_list_write("data_stations.csv", stations_list)
-    csv_list_write("data_depots.csv", depots_list)
-    csv_list_write("data_trains.csv", trains_list)
-    csv_list_write("data_workers.csv", workers_list)
+    file = open("metrodb_fill.sql", "w")
+    file.write("USE MetroDB\nGO\n\n")
+
+    sql_write(file, 'Lines', Line, lines_list)
+    sql_write(file, 'Stations', Station, stations_list)
+    sql_write(file, 'Depots', Depot, depots_list)
+    sql_write(file, 'Trains', Train, trains_list)
+    sql_write(file, 'Workers', Worker, workers_list)
+    sql_write(file, 'Transfers', Transfer, transfers_list)
+    sql_write(file, 'Stocks', Stock, stocks_list)
+    sql_write(file, 'WorkersPlaces', WorkplaceStation, wpstation_list)
+
+    file.close()
 
 
 if __name__ == "__main__":
