@@ -45,7 +45,11 @@ CREATE TABLE Workers(
 	Birth_Date date NOT NULL,
 	Phone_Number nvarchar(12) NOT NULL,
 	Address nvarchar(100) NOT NULL,
-	Job nvarchar(50) NOT NULL
+	Job nvarchar(50) NOT NULL,
+	Station_ID int NULL,
+	Line_Code nvarchar(5) NULL,
+	Start_Time time NOT NULL,
+	End_Time time NOT NULL,
 )
 
 CREATE TABLE Transfers(
@@ -59,13 +63,5 @@ CREATE TABLE Stocks(
 	Depot_ID int NOT NULL,
 	Model_Code nvarchar(10) NOT NULL,
 	Qty tinyint NOT NULL
-)
-
-CREATE TABLE WorkersPlaces(
-	Worker_ID int NOT NULL,
-	Station_ID int NULL,
-	Line_Code nvarchar(5) NULL,
-	Start_Time time NOT NULL,
-	End_Time time NOT NULL,
 )
 
