@@ -228,4 +228,13 @@ SET Qty = Qty + 10
 WHERE Qty < 20
 GO
 
--- 19. 
+-- 19. Для первых трёх депо
+UPDATE Stocks
+SET Qty = 
+(
+	SELECT MAX(Stocks.Qty)
+	FROM Stocks JOIN Trains on Stocks.Model_Code = Trains.Model
+	WHERE Trains.Seats_Qty > 50
+)
+WHERE Depot_ID < 4
+GO
