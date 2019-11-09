@@ -222,4 +222,10 @@ FROM Trains
 WHERE Seats_Qty > 40
 GO
 
--- 18.
+-- 18. Увеличить численный состав поездов в депо
+UPDATE Stocks
+SET Qty = Qty + 10
+WHERE Qty < 20
+GO
+
+-- 19. 
