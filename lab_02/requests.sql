@@ -242,3 +242,14 @@ GO
 -- 20. Убрать из депо модели, число составов которых меньше 15
 DELETE Stocks
 WHERE Qty < 15
+GO
+
+-- 21. Убрать из депо модели, год постройки которых до 1980 и число которых меньше 20
+DELETE FROM Stocks
+WHERE Model_Code IN
+(
+	SELECT Model
+	FROM Trains JOIN Stocks ON Trains.Model = Stocks.Model_Code
+	WHERE Stocks.Qty < 20 AND Trains.Produce_End_y <= 1980
+)
+GO
