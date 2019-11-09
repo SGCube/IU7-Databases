@@ -215,13 +215,11 @@ GO
 INSERT Workers(ID,Name,Sex,Birth_Date,Phone_Number,Address,Job,Station_ID,Line_Code,Start_Time,End_Time)
 VALUES	(1001,'Васильев Александр Петрович','М','1980-05-20','+79150885541','ул. Вяземского, д. 3','сотрудник охраны',14,null,'05:00:10','15:00:00')
 
--- 17. Добавление новых станций
+-- 17. Добавление новых сведений о составах в депо №4
 INSERT Stocks(Depot_ID, Model_Code, Qty)
-SELECT (
-	SELECT Stocks.Depot_ID
-	FROM Stocks
-	WHERE Stocks.Model_Code = '5' AND Stocks.Qty < 10
-), '5', 10
+SELECT 4, Model, 10
 FROM Trains
 WHERE Seats_Qty > 40
 GO
+
+-- 18.
