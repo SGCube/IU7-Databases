@@ -238,3 +238,7 @@ SET Qty =
 )
 WHERE Depot_ID < 4
 GO
+
+-- 20. Убрать из депо модели, число составов которых меньше 15
+DELETE Stocks
+WHERE Qty < 15
