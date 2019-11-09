@@ -307,4 +307,10 @@ SELECT Lines.Code, Lines.Color, Stations.Name, Stations.Depth,
 FROM Lines JOIN Stations ON Stations.Line_ID = Lines.Code
 GO
 
--- 25. Устранение дублей
+-- 25. Устранение дублей: различные профессии
+SELECT Job
+FROM (
+	SELECT ROW_NUMBER() OVER(PARTITION BY Workers.Job ORDER BY Workers.Job) AS N, Job
+	FROM Workers JOIN Stations on Workers.Station_ID = Stations.ID
+) AS W
+WHERE N = 1
