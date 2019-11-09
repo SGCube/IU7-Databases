@@ -253,3 +253,58 @@ WHERE Model_Code IN
 	WHERE Stocks.Qty < 20 AND Trains.Produce_End_y <= 1980
 )
 GO
+
+-- 22. Среднее число поездов одной модели
+WITH MC(ModelNo, NumberOfTrains)
+AS
+(
+	SELECT Model_Code, SUM(Qty) AS Total
+	FROM Stocks
+	GROUP BY Model_Code
+)
+SELECT AVG(NumberOfTrains) AS 'Среднее число поездов одной модели'
+FROM MC
+GO
+
+-- 23. Маршрут линии 1 вместе с ответвлениями одного уровня в виде пересадок
+WITH TunnelTransfer(ID_Station_1, ID_Station_2, Time, Level)
+AS
+(
+	SELECT T.ID_Station_1, T.ID_Station_2, T.Time, 0 AS Level
+	FROM Transfers AS T
+	WHERE NOT EXISTS
+	(
+		SELECT Transfers.ID_Station_2
+		FROM Transfers
+		WHERE Transfers.ID_Station_2 = T.ID_Station_1
+	) AND T.ID_Station_1 IN
+	(
+		SELECT ID
+		FROM Stations
+		WHERE Line_ID = 1
+	)
+	UNION ALL
+
+	SELECT T.ID_Station_1, T.ID_Station_2, T.Time, Level + 1
+	FROM Transfers AS T INNER JOIN TunnelTransfer AS T2
+	ON T.ID_Station_1 = T2.ID_Station_2
+	WHERE T2.ID_Station_2 IN
+	(
+		SELECT ID
+		FROM Stations
+		WHERE Line_ID = 1
+	)
+)
+SELECT ID_Station_1, ID_Station_2, Time, Level
+FROM TunnelTransfer
+GO
+
+-- 24. Оконные функции
+SELECT Lines.Code, Lines.Color, Stations.Name, Stations.Depth,
+		AVG(Stations.Depth) OVER(PARTITION BY Stations.Line_ID) AS AvgDepth,
+		MIN(Stations.Depth) OVER(PARTITION BY Stations.Line_ID) AS MinDepth,
+		MAX(Stations.Depth) OVER(PARTITION BY Stations.Line_ID) AS MaxDepth
+FROM Lines JOIN Stations ON Stations.Line_ID = Lines.Code
+GO
+
+-- 25. Устранение дублей

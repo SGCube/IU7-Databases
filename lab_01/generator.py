@@ -524,9 +524,15 @@ class Transfer:
                 line_2 = random.randint(line_2, lines_qty - 1)
                 station_2 = random.randint(lines_ranges[line_2][0],
                                            lines_ranges[line_2][1])
+                time = random.randint(1, 8)
+                length = 250 * time + 200
                 gen_list.append(Transfer(station_1, station_2,
-                                         random.randint(1, 8),
-                                         random.randint(500, 7000)))
+                                         time, length))
+        for i in range(lines_qty):
+            for j in range(lines_ranges[i][0] + 1, lines_ranges[i][1] + 1):
+                time = random.randint(3, 15)
+                length = 500 * (time + 1)
+                gen_list.append(Transfer(j - 1, j, time, length))
         return gen_list
 
 
