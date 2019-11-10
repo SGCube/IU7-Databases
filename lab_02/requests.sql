@@ -10,20 +10,21 @@ ORDER BY Workers.Name, Workers.Job
 GO
 
 -- 2. Станции, открытые в первом десятилетии 21 века
-SELECT DISTINCT Name, Line_ID
+SELECT Name, Line_ID, Open_Date
 FROM Stations
 WHERE Open_Date BETWEEN '2001-01-01' AND '2010-12-31'
+ORDER BY Open_Date
 GO
 
 -- 3. Сотрудники метро, проживающие на улице Жуковского
-SELECT DISTINCT Name, Phone_Number, Job
+SELECT DISTINCT Name, Phone_Number, Job, Address
 FROM Workers
 WHERE Address LIKE 'ул. Жуковского,%'
 GO
 
 -- 4. Сотрудники станций, начинающих работу в 5:00
-SELECT Name, Phone_Number, Job, Address
-FROM Workers
+SELECT Workers.Name, Phone_Number, Job, Address, Stations.Open_Time
+FROM Workers JOIN Stations on Workers.Station_ID = Stations.ID
 WHERE Station_ID IN
 	(
 	SELECT ID
@@ -61,8 +62,8 @@ SELECT SUM(TotStock.Wagons_Qty) AS 'WagonsOverall',
 		COUNT(TotStock.Model) AS 'TrainsQty'
 FROM (
 	SELECT Trains.Seats_Qty, Trains.Wagons_Qty, Trains.Model
-	FROM Trains JOIN (Stocks JOIN Depots on Stocks.Depot_ID = Depots.ID)
-	on Trains.Model = Stocks.Model_Code WHERE Depot_ID = 8
+	FROM Trains JOIN (Stocks JOIN Depots ON Stocks.Depot_ID = Depots.ID)
+	ON Trains.Model = Stocks.Model_Code WHERE Depot_ID = 8
 	GROUP BY Trains.Wagons_Qty, Trains.Seats_Qty, Trains.Model
 ) AS TotStock
 GO
@@ -93,7 +94,7 @@ FROM Stations
 GO
 
 -- 10. Характер пересадок
-SELECT S1Name, S2Name,
+SELECT S1Name, S2Name, TransferTime,
 	CASE
 		WHEN TransferTime <= 1 THEN 'Crossplatforming'
 		WHEN TransferTime < 3 THEN 'Short'
@@ -111,11 +112,12 @@ FROM
 ) AS T
 GO
 
--- 11. 
+-- 11. Информация о моделях поездов, которых имеется не меньше 10:
+--		Общее число мест, сколько лет эксплуатируется
 SELECT Model,
 	(CAST(Wagons_Qty AS int) * CAST(Seats_Qty AS int)) AS SeatsOverall,
 	YEAR(Getdate()) - Exploit_Since_y AS Exploiting
-INTO #ModelExploit
+INTO #ModelExploition
 FROM Trains
 WHERE EXISTS
 (
@@ -126,7 +128,7 @@ WHERE EXISTS
 GROUP BY Model, Wagons_Qty, Seats_Qty, Exploit_Since_y
 GO
 
-SELECT * FROM #ModelExploit
+SELECT * FROM #ModelExploition
 GO
 
 -- 12. Сотрудники станций линий 1 и 2
@@ -158,7 +160,7 @@ WHERE EXISTS
 	FROM Stocks
 	WHERE EXISTS
 	(
-		SELECT ID
+		SELECT Depots.ID
 		FROM Depots
 		WHERE EXISTS
 		(
@@ -209,11 +211,13 @@ HAVING Stations.Depth <
 	FROM Stations
 	WHERE Stations.Line_ID = 5
 )
+ORDER BY Stations.Depth
 GO
 
 -- 16. Добавление нового сотрудника
 INSERT Workers(ID,Name,Sex,Birth_Date,Phone_Number,Address,Job,Station_ID,Line_Code,Start_Time,End_Time)
-VALUES	(1001,'Васильев Александр Петрович','М','1980-05-20','+79150885541','ул. Вяземского, д. 3','сотрудник охраны',14,null,'05:00:10','15:00:00')
+VALUES ((SELECT COUNT(*) FROM Workers) + 1,'Васильев Александр Петрович','М','1980-05-20','+79150885541',
+		'ул. Вяземского, д. 3','сотрудник охраны',14,null,'05:00:10','15:00:00')
 
 -- 17. Добавление новых сведений о составах в депо №4
 INSERT Stocks(Depot_ID, Model_Code, Qty)
@@ -228,7 +232,7 @@ SET Qty = Qty + 10
 WHERE Qty < 20
 GO
 
--- 19. Для первых трёх депо
+-- 19. Для первых трёх депо увеличить численный состав текущего максимального числа
 UPDATE Stocks
 SET Qty = 
 (
