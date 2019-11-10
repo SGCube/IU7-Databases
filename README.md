@@ -15,13 +15,13 @@
    </tr>
    <tr>
     <td>2</td>
-    <td></th>
-    <td></th>
+    <td>SQL запросы</th>
+    <td>✔️</th>
    </tr>
    <tr>
     <td>3</td>
-    <td></th>
-    <td></th>
+    <td>SQL модули</th>
+    <td>⭕️</th>
    </tr>
    <tr>
     <td>4</td>
