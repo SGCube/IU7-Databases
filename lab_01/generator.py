@@ -388,8 +388,11 @@ class Train:
 class Worker:
     count = 0
     param_names = "[ID],[Name],[Sex],[Birth_Date],[Phone_Number],[Address],"\
-                  "[Job]"
-    format_str = "%d,'%s','%s','%s','%s','%s','%s'"
+                  "[Job],[Station_ID],[Line_Code],[Start_Time],[End_Time]"
+    format_str = "%d,'%s','%s','%s','%s','%s','%s',%d,'%s','%s','%s'"
+    null1_str = "%d,'%s','%s','%s','%s','%s','%s',null,'%s','%s','%s'"
+    null2_str = "%d,'%s','%s','%s','%s','%s','%s',%d,null,'%s','%s'"
+    null3_str = "%d,'%s','%s','%s','%s','%s','%s',null,null,'%s','%s'"
 
     __id = 0
     __name = ""
@@ -399,7 +402,12 @@ class Worker:
     __address = ""
     __job = ""
 
-    def __init__(self, name="", sex="", birth_date=None, phone_number=None,
+    __station = None
+    __line = None
+    __start_time = ""
+    __end_time = ""
+
+    def __init__(self, station, line, name="", sex="", birth_date=None, phone_number=None,
                  address=None, job=None):
         Worker.count += 1
         self.__id = Worker.count
@@ -436,19 +444,49 @@ class Worker:
 
         age = (datetime.date.today() - self.__birth_date).days // 365
 
+        self.__start_time = Time.generate(Time(5, 0), Time(14, 0))
+        self.__end_time = Time.generate(self.__start_time, Time(14, 0))
+
+        if self.__job in ["машинист электропоезда", "помощник машиниста"]:
+            self.__station = None
+            self.__line = line
+        else:
+            self.__station = station
+            self.__line = None
+
     def __str__(self):
+        if self.__station is None and self.__line is None:
+            return Worker.null3_str % (self.__id, self.__name, self.__sex,
+                                       self.__birth_date, self.__phone_number,
+                                       self.__address, self.__job,
+                                       self.__start_time, self.__end_time)
+        if self.__station is None:
+            return Worker.null1_str % (self.__id, self.__name, self.__sex,
+                                       self.__birth_date, self.__phone_number,
+                                       self.__address, self.__job,
+                                       self.__line,
+                                       self.__start_time, self.__end_time)
+        if self.__line is None:
+            return Worker.null2_str % (self.__id, self.__name, self.__sex,
+                                       self.__birth_date, self.__phone_number,
+                                       self.__address, self.__job,
+                                       self.__station,
+                                       self.__start_time, self.__end_time)
         return Worker.format_str % (self.__id, self.__name, self.__sex,
                                     self.__birth_date, self.__phone_number,
-                                    self.__address, self.__job)
+                                    self.__address, self.__job,
+                                    self.__station, self.__line,
+                                    self.__start_time, self.__end_time)
 
     def get_job(self):
         return self.__job
 
     @staticmethod
-    def list_generate(size):
+    def list_generate(size, stations, lines):
         gen_list = []
         for k in range(size):
-            gen_list.append(Worker())
+            gen_list.append(Worker(random.randint(1, len(stations)),
+                                   random.choice(lines).get_code()))
         return gen_list
 
 
@@ -486,9 +524,15 @@ class Transfer:
                 line_2 = random.randint(line_2, lines_qty - 1)
                 station_2 = random.randint(lines_ranges[line_2][0],
                                            lines_ranges[line_2][1])
+                time = random.randint(1, 8)
+                length = 250 * time + 200
                 gen_list.append(Transfer(station_1, station_2,
-                                         random.randint(1, 8),
-                                         random.randint(500, 7000)))
+                                         time, length))
+        for i in range(lines_qty):
+            for j in range(lines_ranges[i][0] + 1, lines_ranges[i][1] + 1):
+                time = random.randint(3, 15)
+                length = 500 * (time + 1)
+                gen_list.append(Transfer(j - 1, j, time, length))
         return gen_list
 
 
@@ -520,65 +564,6 @@ class Stock:
         return gen_list
 
 
-class WorkplaceStation:
-    param_names = "[Worker_ID],[Station_ID],[Line_Code],[Start_Time],[End_Time]"
-    format_str = "%d,%d,'%s','%s','%s'"
-    null1_str = "%d,null,'%s','%s','%s'"
-    null2_str = "%d,%d,null,'%s','%s'"
-    null3_str = "%d,null,null,'%s','%s'"
-
-    __worker = 0
-    __station = None
-    __line = None
-    __start_time = ""
-    __end_time = ""
-
-    def __init__(self, worker, station, line, start_time, end_time):
-        self.__worker = worker
-        self.__station = station
-        self.__line = line
-
-        self.__start_time = start_time
-        self.__end_time = end_time
-
-    def __str__(self):
-        if self.__station is None and self.__line is None:
-            return WorkplaceStation.null3_str % (self.__worker,
-                                                 self.__start_time,
-                                                 self.__end_time)
-        if self.__station is None:
-            return WorkplaceStation.null1_str % (self.__worker,
-                                                 self.__line, self.__start_time,
-                                                 self.__end_time)
-        if self.__line is None:
-            return WorkplaceStation.null2_str % (self.__worker, self.__station,
-                                                 self.__start_time,
-                                                 self.__end_time)
-        return WorkplaceStation.format_str % (self.__worker, self.__station,
-                                              self.__line, self.__start_time,
-                                              self.__end_time)
-
-    @staticmethod
-    def list_generate(workers, stations, lines):
-        gen_list = []
-        for i in range(len(workers)):
-            if workers[i].get_job() in ["машинист электропоезда",
-                                        "помощник машиниста"]:
-                start_time = Time.generate(Time(5, 0), Time(14, 0))
-                gen_list.append(
-                    WorkplaceStation(i + 1, None,
-                                     random.choice(lines).get_code(),
-                                     start_time,
-                                     Time.generate(start_time, Time(23, 59))))
-            else:
-                start_time = Time.generate(Time(5, 0), Time(14, 0))
-                gen_list.append(
-                    WorkplaceStation(i + 1, random.randint(1, len(stations)),
-                                     None, start_time,
-                                     Time.generate(start_time, Time(23, 59))))
-        return gen_list
-
-
 ##############################################################################
 # SQL Create methods #
 ##############################################################################
@@ -602,11 +587,9 @@ def generate_all():
         Station.list_generate(400, lines_list)
     depots_list = Depot.list_generate(lines_lengths)
     trains_list = Train.list_generate(30)
-    workers_list = Worker.list_generate(1000)
+    workers_list = Worker.list_generate(1000, stations_list, lines_list)
     transfers_list = Transfer.list_generate(lines_ranges)
     stocks_list = Stock.list_generate(trains_list, depots_list)
-    wpstation_list = WorkplaceStation.list_generate(workers_list, stations_list,
-                                                    lines_list)
 
     file = open("metrodb_fill.sql", "w")
     file.write("USE MetroDB\nGO\n\n")
@@ -618,7 +601,6 @@ def generate_all():
     sql_write(file, 'Workers', Worker, workers_list)
     sql_write(file, 'Transfers', Transfer, transfers_list)
     sql_write(file, 'Stocks', Stock, stocks_list)
-    sql_write(file, 'WorkersPlaces', WorkplaceStation, wpstation_list)
 
     file.close()
 
