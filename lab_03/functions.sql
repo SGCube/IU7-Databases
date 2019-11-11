@@ -25,3 +25,30 @@ GO
  
 SELECT * FROM Stations WHERE Stations.Line_ID = 10
 GO
+
+-- 2. Подставляемая табличная функция
+
+DROP FUNCTION getDepotMissingTrains
+GO
+
+CREATE FUNCTION getDepotMissingTrains(@depotid int)
+RETURNS TABLE
+AS RETURN
+(
+	SELECT *
+	FROM Trains
+	WHERE Trains.Model NOT IN
+	(
+		SELECT Model_Code
+		FROM Stocks
+		WHERE Depot_ID = @depotid
+	)
+)
+GO
+
+SELECT * FROM dbo.getDepotMissingTrains(10)
+GO
+
+SELECT * FROM Stocks
+WHERE Depot_ID = 10
+GO
