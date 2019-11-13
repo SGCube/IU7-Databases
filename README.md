@@ -21,7 +21,7 @@
    <tr>
     <td>3</td>
     <td>SQL модули</th>
-    <td>⭕️</th>
+    <td>⌛️</th>
    </tr>
    <tr>
     <td>4</td>
