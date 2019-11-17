@@ -31,7 +31,7 @@ Stocks.Model_Code = #Stocks_Before.Model_Code
 WHERE Stocks.Model_Code = '10'
 GO
 
-EXECUTE AddTrains '2', -15;
+EXECUTE AddTrains '2', 4;
 GO
 
 SELECT Stocks.Depot_ID, Qty, QtyBefore
@@ -41,7 +41,51 @@ Stocks.Model_Code = #Stocks_Before.Model_Code
 WHERE Stocks.Model_Code = '2'
 GO
 
-DROP TABLE #Stocks_Before
-EXECUTE AddTrains '10', -10;
-EXECUTE AddTrains '2', -4;
+DROP TABLE #Stocks_Before;
+GO
+
+-- 2. Рекурсивная процедура
+
+DROP PROCEDURE DisplayLineRoute
+GO
+
+CREATE PROCEDURE DisplayLineRoute(@LineID int)
+AS
+BEGIN
+	WITH TunnelTransfer(ID_Station_1, ID_Station_2, Time, Level)
+	AS
+	(
+		SELECT T.ID_Station_1, T.ID_Station_2, T.Time, 0 AS Level
+		FROM Transfers AS T
+		WHERE NOT EXISTS
+		(
+			SELECT Transfers.ID_Station_2
+			FROM Transfers
+			WHERE Transfers.ID_Station_2 = T.ID_Station_1
+		) AND T.ID_Station_1 IN
+		(
+			SELECT ID
+			FROM Stations
+			WHERE Line_ID = @LineID
+		)
+		UNION ALL
+		SELECT T.ID_Station_1, T.ID_Station_2, T.Time, Level + 1
+		FROM Transfers AS T INNER JOIN TunnelTransfer AS T2
+		ON T.ID_Station_1 = T2.ID_Station_2
+		WHERE T2.ID_Station_2 IN
+		(
+			SELECT ID
+			FROM Stations
+			WHERE Line_ID = @LineID
+		)
+	)
+	SELECT ID_Station_1, ID_Station_2, Time, Level
+	FROM TunnelTransfer
+END
+GO
+
+EXECUTE DisplayLineRoute 3
+GO
+
+EXECUTE DisplayLineRoute 5
 GO
