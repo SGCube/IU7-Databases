@@ -74,3 +74,50 @@ GO
 
 SELECT * FROM getDepotFullInfo(5)
 GO
+
+-- 4. Рекурсивная функция
+
+DROP FUNCTION lineRoute
+GO
+
+CREATE FUNCTION lineRoute(@LineID int)
+RETURNS TABLE
+RETURN
+(
+	WITH TunnelTransfer(ID_Station_1, ID_Station_2, Time, Level)
+	AS
+	(
+		SELECT T.ID_Station_1, T.ID_Station_2, T.Time, 0 AS Level
+		FROM Transfers AS T
+		WHERE NOT EXISTS
+		(
+			SELECT Transfers.ID_Station_2
+			FROM Transfers
+			WHERE Transfers.ID_Station_2 = T.ID_Station_1
+		) AND T.ID_Station_1 IN
+		(
+			SELECT ID
+			FROM Stations
+			WHERE Line_ID = @LineID
+		)
+		UNION ALL
+		SELECT T.ID_Station_1, T.ID_Station_2, T.Time, Level + 1
+		FROM Transfers AS T INNER JOIN TunnelTransfer AS T2
+		ON T.ID_Station_1 = T2.ID_Station_2
+		WHERE T2.ID_Station_2 IN
+		(
+			SELECT ID
+			FROM Stations
+			WHERE Line_ID = @LineID
+		)
+	)
+	SELECT ID_Station_1, ID_Station_2, Time, Level
+	FROM TunnelTransfer
+)
+GO
+
+SELECT * FROM lineRoute(3)
+GO
+
+SELECT * FROM lineRoute(5)
+GO
