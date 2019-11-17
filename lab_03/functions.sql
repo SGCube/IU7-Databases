@@ -63,9 +63,10 @@ RETURNS @info TABLE
 (ID int, Name nvarchar(50), Nearest_Station_ID int, Open_Date date, TrainsQty int)
 AS
 BEGIN
+	DECLARE @qty int
+	SET @qty = (SELECT SUM(Qty) FROM Stocks WHERE Depot_ID = @DepotID)
 	INSERT @info
-	SELECT ID, Name, Nearest_Station_ID, Open_Date,
-		(SELECT SUM(Qty) FROM Stocks WHERE Depot_ID = @DepotID) AS TrainsQty
+	SELECT ID, Name, Nearest_Station_ID, Open_Date, @qty AS TrainsQty
 	FROM Depots
 	WHERE Depots.ID = @DepotID
 	RETURN
