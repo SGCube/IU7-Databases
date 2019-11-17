@@ -52,3 +52,25 @@ GO
 SELECT * FROM Stocks
 WHERE Depot_ID = 10
 GO
+
+-- 3. Многооператорная табличная функция
+
+DROP FUNCTION getDepotFullInfo
+GO
+
+CREATE FUNCTION getDepotFullInfo(@DepotID int)
+RETURNS @info TABLE
+(ID int, Name nvarchar(50), Nearest_Station_ID int, Open_Date date, TrainsQty int)
+AS
+BEGIN
+	INSERT @info
+	SELECT ID, Name, Nearest_Station_ID, Open_Date,
+		(SELECT SUM(Qty) FROM Stocks WHERE Depot_ID = @DepotID) AS TrainsQty
+	FROM Depots
+	WHERE Depots.ID = @DepotID
+	RETURN
+END
+GO
+
+SELECT * FROM getDepotFullInfo(5)
+GO
