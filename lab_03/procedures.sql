@@ -119,3 +119,19 @@ GO
 
 EXECUTE LineDepots
 GO
+
+-- 4. Процедура доступа к метаданным
+----процедура с метаданным
+DROP PROCEDURE SysProceduresBaseInfo
+GO
+
+CREATE PROCEDURE SysProceduresBaseInfo
+AS
+BEGIN
+	SELECT name, object_id, type, type_desc, create_date FROM sys.procedures
+END
+GO
+
+EXECUTE SysProceduresBaseInfo
+GO
+
