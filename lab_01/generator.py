@@ -305,14 +305,17 @@ class Depot:
         return self.__id
 
     @staticmethod
-    def list_generate(lines_lengths):
+    def list_generate(lines_lengths, lines_ranges):
         gen_list = []
-        depot_qty = []
-        for k in range(len(lines_lengths)):
-            depot_qty.append(lines_lengths[k] // 15 + 1)
-            for i in range(depot_qty[k]):
-                nearest_station = random.randint(1 + 15 * i, 15 * (i + 1))
-                gen_list.append(Depot(fake.street_title(), nearest_station))
+        lines_qty = len(lines_ranges)
+        for i in range(lines_qty - 1):
+            depot_qty = lines_lengths[i] // 15 + 1
+            station_1 = lines_ranges[i][0]
+            for j in range(depot_qty):
+                station_2 = min(station_1 + 15 * (j + 1) - 1,
+                                lines_ranges[i][1])
+                station = random.randint(station_1 + 15 * j, station_2)
+                gen_list.append(Depot(fake.street_title(), station))
         return gen_list
 
 
@@ -585,7 +588,7 @@ def generate_all():
     lines_list = Line.list_generate(20)
     stations_list, lines_lengths, lines_ranges =\
         Station.list_generate(400, lines_list)
-    depots_list = Depot.list_generate(lines_lengths)
+    depots_list = Depot.list_generate(lines_lengths, lines_ranges)
     trains_list = Train.list_generate(30)
     workers_list = Worker.list_generate(1000, stations_list, lines_list)
     transfers_list = Transfer.list_generate(lines_ranges)
