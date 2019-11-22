@@ -89,3 +89,33 @@ GO
 
 EXECUTE DisplayLineRoute 5
 GO
+
+-- 3. Процедура с курсором
+DROP Procedure LineDepots
+GO
+
+CREATE Procedure LineDepots
+AS
+BEGIN
+	DECLARE @id nvarchar(5)
+	DECLARE curs CURSOR FOR
+		SELECT Lines.Code FROM Lines
+
+	OPEN curs
+
+	FETCH NEXT FROM curs INTO @id
+	WHILE @@FETCH_STATUS = 0
+		BEGIN
+			SELECT Depots.ID, Depots.Name, St.Name AS NearestStation, St.Line_ID
+			FROM Depots JOIN (SELECT ID, Line_ID, Name FROM Stations) AS St
+			ON Depots.Nearest_Station_ID = St.ID WHERE St.Line_ID = @id
+			FETCH NEXT FROM curs INTO @id
+		END
+
+	CLOSE curs
+	DEALLOCATE curs
+END
+GO
+
+EXECUTE LineDepots
+GO
