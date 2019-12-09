@@ -35,6 +35,10 @@
 **/.vs/**
 *.sln
 **/Debug/**
+*.dbmdl
+*.jfm
+*.sqlproj
+*.sqlproj.user
 
 # Executables
 *.exe
