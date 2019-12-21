@@ -63,6 +63,9 @@ GO
 SELECT * FROM dbo.DepotMissingTrains(5)
 GO
 
+SELECT * FROM Stocks WHERE Depot_ID = 5
+GO
+
 DROP FUNCTION IF EXISTS DepotMissingTrains
 GO
 
@@ -106,11 +109,43 @@ DELETE Lines
 WHERE Code = '2'
 GO
 
-DROP TRIGGER IF EXISTS NoLineDelete
+DROP TRIGGER IF EXISTS T_NoLineDelete
 
 -- 6. Определяемый пользователем тип данных CLR
 
+CREATE TYPE Vertex
+EXTERNAL NAME SQL_CLR.Vertex
+GO
 
+CREATE TABLE VertexTest
+( 
+  ID INT IDENTITY(1,1) NOT NULL, 
+  V Vertex NOT NULL,
+);
+GO
+
+INSERT INTO VertexTest(V) VALUES('0, 0, 0')
+INSERT INTO VertexTest(V) VALUES('-1, 1, 0')
+GO
+
+INSERT INTO VertexTest(V) VALUES('5, 84, -4.5')
+GO 
+
+INSERT INTO VertexTest(V) VALUES('a, 1, 1')
+GO
+
+SELECT * FROM VertexTest
+GO
+
+SELECT ID, V.ToString() AS Vertex
+FROM VertexTest
+GO
+
+DROP TABLE IF EXISTS VertexTest
+GO
+
+DROP TYPE IF EXISTS Vertex
+GO
 
 -- -- --
 

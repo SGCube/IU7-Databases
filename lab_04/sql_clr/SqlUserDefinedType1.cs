@@ -98,24 +98,6 @@ public struct Vertex: INullable
         }
     }
 
-    [SqlMethod(OnNullCall = false)]
-    public Double Distance()
-    {
-        return DistanceFromXY(0, 0);
-    }
-
-    [SqlMethod(OnNullCall = false)]
-    public Double DistanceFrom(Vertex pFrom)
-    {
-        return DistanceFromXY(pFrom.x, pFrom.y);
-    }
-
-    [SqlMethod(OnNullCall = false)]
-    public Double DistanceFromXY(Int32 iX, Int32 iY)
-    {
-        return Math.Sqrt(Math.Pow(iX - _x, 2.0) + Math.Pow(iY - _y, 2.0));
-    }
-
     // Закрытый член
     private bool _null;
     private Int32 _x, _y, _z;
