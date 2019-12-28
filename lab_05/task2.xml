@@ -1,0 +1,27 @@
+<ROOT>
+<Workers>
+  <Name>Горбунова Лидия Валентиновна</Name>
+  <Job>участковый врач-терапевт</Job>
+  <Phone_Number>+79174518624</Phone_Number>
+</Workers>
+<Workers>
+  <Name>Попова Майя Леоновна</Name>
+  <Job>дежурный по станции</Job>
+  <Phone_Number>+79076313360</Phone_Number>
+</Workers>
+<Workers>
+  <Name>Сазонов Эрнест Афанасьевич</Name>
+  <Job>электромонтёр</Job>
+  <Phone_Number>+79866846025</Phone_Number>
+</Workers>
+<Workers>
+  <Name>Трофимов Дорофей Иосифович</Name>
+  <Job>инженер-проектировщик</Job>
+  <Phone_Number>+79145988862</Phone_Number>
+</Workers>
+<Workers>
+  <Name>Трофимов Павел Исидорович</Name>
+  <Job>электромонтёр</Job>
+  <Phone_Number>+79063289327</Phone_Number>
+</Workers>
+</ROOT>

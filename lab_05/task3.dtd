@@ -1,0 +1,6 @@
+<!ELEMENT Workers (W*)>
+<!ELEMENT W>
+<!ATTLIST W
+    Name (#PCDATA) #REQUIRED
+    Job (#PCDATA) #REQUIRED
+    Phone_Number (#PCDATA) #REQUIRED>
