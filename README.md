@@ -1,3 +1,3 @@
 # Базы данных
 
-### [Wiki-страница](https://gitlab.com/SGCube/iu7-databases/wikis/home)
+### [Wiki-страница](https://github.com/SGCube/IU7-Databases/wiki)
